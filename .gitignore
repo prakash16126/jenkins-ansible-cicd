@@ -1,0 +1,18 @@
+# SSH private keys
+*.pem
+*.key
+
+# Real Ansible inventory
+hosts.ini
+inventory.ini
+
+# Ansible generated files
+*.retry
+
+# Python cache
+__pycache__/
+*.pyc
+
+# IDE files
+.vscode/
+.idea/

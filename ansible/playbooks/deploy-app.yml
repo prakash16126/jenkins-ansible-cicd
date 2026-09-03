@@ -1,0 +1,66 @@
+---
+- name: Deploy Netflix Application
+  hosts: dev
+  become: true
+
+  vars:
+    tomcat_home: "/opt/tomcat"
+    war_source: "/var/lib/jenkins/workspace/cicd-job/target/NETFLIX-1.2.2.war"
+    war_destination: "{{ tomcat_home }}/webapps/NETFLIX.war"
+
+  tasks:
+
+    - name: Check if WAR exists on Jenkins server
+      delegate_to: localhost
+      become: false
+      stat:
+        path: "{{ war_source }}"
+      register: war_file
+
+    - name: Fail if WAR file does not exist
+      fail:
+        msg: "WAR file not found at {{ war_source }}"
+      when: not war_file.stat.exists
+
+    - name: Stop Tomcat
+      systemd:
+        name: tomcat
+        state: stopped
+
+    - name: Remove previous exploded application
+      file:
+        path: "{{ tomcat_home }}/webapps/NETFLIX"
+        state: absent
+
+    - name: Remove previous WAR file
+      file:
+        path: "{{ war_destination }}"
+        state: absent
+
+    - name: Copy WAR to Tomcat
+      copy:
+        src: "{{ war_source }}"
+        dest: "{{ war_destination }}"
+        owner: tomcat
+        group: tomcat
+        mode: "0644"
+
+    - name: Start Tomcat
+      systemd:
+        name: tomcat
+        state: started
+
+    - name: Wait for Tomcat port
+      wait_for:
+        port: 8080
+        delay: 5
+        timeout: 60
+
+    - name: Verify Tomcat is active
+      command: systemctl is-active tomcat
+      register: tomcat_status
+      changed_when: false
+
+    - name: Display Tomcat status
+      debug:
+        msg: "Tomcat status: {{ tomcat_status.stdout }}"
