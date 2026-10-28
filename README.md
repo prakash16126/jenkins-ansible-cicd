@@ -251,20 +251,18 @@ ansible-playbook -i ansible/inventory.ini ansible/playbooks/health-check.yml
 
 A typical CI/CD flow for this repository is:
 
-```text
-Developer changes code
-       |
-       v
-Jenkins pipeline starts
-       |
-       +--> Maven compile
-       +--> Maven test
-       +--> Maven package
-       +--> Build WAR artifact
-       +--> Upload to S3
-       +--> Deploy to Tomcat
-       +--> Run Ansible deployment
-       +--> Perform health check
+```mermaid
+flowchart TD
+    A[Developer changes code] --> B[Jenkins pipeline starts]
+    B --> C[Maven compile]
+    C --> D[Maven test]
+    D --> E[Maven package]
+    E --> F[Build WAR artifact]
+    F --> G[Upload to S3]
+    G --> H[Deploy to Tomcat]
+    H --> I[Run Ansible deployment]
+    I --> J[Perform health check]
+    J --> K[Application is live]
 ```
 
 ## Configuration Notes
